@@ -1,75 +1,101 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="html2canvas" basedir="." default="build">
     <property name="src.dir" location="src"/>
+    <property name="js.dir" location="js"/>
     <property name="lib.dir" location="../lib"/>
-    <property name="build.dir" location="build"/>
-    <property name="dist"  location="dist"/>
     <property name="jquery-externs" value="jquery-1.4.4.externs.js"/>
 
     <property name="JS_NAME" value="html2canvas.js"/>
     <property name="JS_NAME_MIN" value="html2canvas.min.js"/>
     <property name="JQUERY_PLUGIN_NAME" value="jquery.plugin.html2canvas.js"/>
-    <loadfile property="version" srcfile="version.txt" />
-
-    <fileset id="sourcefiles" dir="${src.dir}">
-        <include name="LICENSE"/>
-        <include name="Core.js"/>
-        <include name="Generate.js"/>
-        <include name="Parse.js"/>
-        <include name="Preload.js"/>
-        <include name="Queue.js"/>
-        <include name="Renderer.js"/>
+  
+    <fileset id="index" dir="${src.dir}">
+        <include name="header.html"/>
+        <include name="index.html"/>
+        <include name="footer.html"/> 
     </fileset>
 
-    <path id="jquery-plugin">
-        <fileset dir="${src.dir}" includes="LICENSE"/>
-        <fileset dir="${src.dir}/plugins" includes="${JQUERY_PLUGIN_NAME}"/>    
-    </path>
-
-    <target name="plugins">
-        <concat fixlastline="yes" destfile="${build.dir}/${JQUERY_PLUGIN_NAME}">
-            <path refid="jquery-plugin"/>
+  
+    
+    <target name="build"> 
+        <concat destfile="index.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="index.html"/>
+                <file name="footer.html"/> 
+            </filelist>
         </concat>
-        <replaceregexp match="@VERSION@" replace="${version}" flags="g" byline="true" file="${build.dir}/${JQUERY_PLUGIN_NAME}" />
-    </target>
-
-
-    <target name="build" depends="plugins">
-        <concat fixlastline="yes" destfile="${build.dir}/${JS_NAME}">
-            <fileset refid="sourcefiles"/>
+        
+        <concat destfile="documentation.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="documentation.html"/>
+                <file name="footer.html"/> 
+            </filelist>
         </concat>
-        <replaceregexp match="@VERSION@" replace="${version}" flags="g" byline="true" file="${build.dir}/${JS_NAME}" />
+        
+        <concat destfile="about.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="about.html"/>
+                <file name="footer.html"/> 
+            </filelist>
+        </concat>
+        
+        <concat destfile="examples.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="examples.html"/>
+                <file name="footer.html"/> 
+            </filelist>
+        </concat>
+        
+                
+        <concat destfile="script.js">
+            <filelist dir="${js.dir}">
+                <file name="jquery-1.7.1.js"/>
+                <file name="bootstrap.js"/>
+                <file name="prettify.js"/> 
+                <file name="site.js"/> 
+            </filelist>
+        </concat>
+
     </target>
+    
+    <target depends="build" name="min">     
+
+        <apply parallel="false" force="true" dest="." executable="java"> 
+            <fileset dir="." includes="*.html" />
+            <arg value="-jar"/> 
+            <arg path="${lib.dir}/htmlcompressor-1.5.2.jar"/> 
+            <arg line="--remove-quotes"/> 
+            <arg line="--compress-js"/> 
+            <arg line="--compress-css"/>
+            <srcfile/> 
+            <arg value="-o"/> 
+            <mapper type="identity"/>
+            <targetfile/> 
+        </apply> 
+        
+        <jscomp compilationLevel="simple" warning="verbose"
+            debug="false"
+            output="script.min.js">
+            <externs dir="${lib.dir}">
+                <file name="${jquery-externs}"/>
+            </externs>
+            <sources dir=".">
+                <file name="script.js"/>
+            </sources>
+        </jscomp>
+        
+    </target>
+    
+    
 
 
     <taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
            classpath="${lib.dir}/compiler.jar" onerror="report"/>
 
-    <target name="release" depends="build">
-        <jscomp compilationLevel="simple" warning="verbose"
-            debug="false"
-            output="${build.dir}/${JS_NAME_MIN}">
-            <externs dir="${lib.dir}">
-                 <file name="${jquery-externs}"/>
-            </externs>
-            <sources dir="${src.dir}">
-                <!-- need to write them again here since the closure compiler doesn't understand filesets,... -->
-                <file name="LICENSE"/>
-                <file name="Core.js"/>
-                <file name="Generate.js"/>
-                <file name="Parse.js"/>
-                <file name="Preload.js"/>
-                <file name="Queue.js"/>
-                <file name="Renderer.js"/>
-            </sources>
-        </jscomp>
-        <replaceregexp match="@VERSION@" replace="${version}" flags="g" byline="true" file="${build.dir}/${JS_NAME_MIN}" />
-    </target>
 
-    <target name="clean">
-        <delete file="${build.dir}/${JS_NAME}"></delete>
-        <delete file="${build.dir}/${JS_NAME_MIN}"></delete>
-        <delete file="${build.dir}/${JQUERY_PLUGIN_NAME}"></delete>
-    </target>
 </project>
 
