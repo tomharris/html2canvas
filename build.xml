@@ -9,11 +9,7 @@
     <property name="JS_NAME_MIN" value="html2canvas.min.js"/>
     <property name="JQUERY_PLUGIN_NAME" value="jquery.plugin.html2canvas.js"/>
   
-    <fileset id="index" dir="${src.dir}">
-        <include name="header.html"/>
-        <include name="index.html"/>
-        <include name="footer.html"/> 
-    </fileset>
+
 
   
     
@@ -24,7 +20,23 @@
                 <file name="index.html"/>
                 <file name="footer.html"/> 
             </filelist>
+             
         </concat>
+        <replaceregexp match="@TITLE@" replace="Home" flags="g" byline="true" file="index.html" />
+        <replaceregexp match="@LINK1@" replace="active" flags="g" byline="true" file="index.html" />
+        <replaceregexp match="@LINK\d@" replace="" flags="g" byline="true" file="index.html" />
+        
+
+        <concat destfile="about.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="about.html"/>
+                <file name="footer.html"/> 
+            </filelist>
+        </concat>
+        <replaceregexp match="@TITLE@" replace="About" flags="g" byline="true" file="about.html" />
+        <replaceregexp match="@LINK2@" replace="active" flags="g" byline="true" file="about.html" />
+        <replaceregexp match="@LINK\d@" replace="" flags="g" byline="true" file="about.html" />
         
         <concat destfile="documentation.html">
             <filelist dir="${src.dir}">
@@ -33,15 +45,12 @@
                 <file name="footer.html"/> 
             </filelist>
         </concat>
-        
-        <concat destfile="about.html">
-            <filelist dir="${src.dir}">
-                <file name="header.html"/>
-                <file name="about.html"/>
-                <file name="footer.html"/> 
-            </filelist>
-        </concat>
-        
+        <replaceregexp match="@TITLE@" replace="Documentation" flags="g" byline="true" file="documentation.html" />
+        <replaceregexp match="@LINK3@" replace="active" flags="g" byline="true" file="documentation.html" />
+        <replaceregexp match="@LINK\d@" replace="" flags="g" byline="true" file="documentation.html" />
+         
+ 
+ 
         <concat destfile="examples.html">
             <filelist dir="${src.dir}">
                 <file name="header.html"/>
@@ -49,14 +58,35 @@
                 <file name="footer.html"/> 
             </filelist>
         </concat>
-        
-                
+        <replaceregexp match="@TITLE@" replace="Examples" flags="g" byline="true" file="examples.html" />
+        <replaceregexp match="@LINK4@" replace="active" flags="g" byline="true" file="examples.html" />
+        <replaceregexp match="@LINK\d@" replace="" flags="g" byline="true" file="examples.html" />        
+  
+  
+          <concat destfile="screenshots.html">
+            <filelist dir="${src.dir}">
+                <file name="header.html"/>
+                <file name="screenshots.html"/>
+                <file name="footer.html"/> 
+            </filelist>
+        </concat>
+        <replaceregexp match="@TITLE@" replace="Screenshot console" flags="g" byline="true" file="screenshots.html" />
+  
+  
         <concat destfile="script.js">
             <filelist dir="${js.dir}">
-                <file name="jquery-1.7.1.js"/>
                 <file name="bootstrap.js"/>
                 <file name="prettify.js"/> 
+                <file name="jquery.history.js"/> 
                 <file name="site.js"/> 
+            </filelist>
+        </concat>
+        
+        <concat destfile="style.css">
+            <filelist dir="css">
+                <file name="bootstrap.css"/>
+                <file name="prettify.css"/> 
+                <file name="site.css"/> 
             </filelist>
         </concat>
 
@@ -65,7 +95,7 @@
     <target depends="build" name="min">     
 
         <apply parallel="false" force="true" dest="." executable="java"> 
-            <fileset dir="." includes="*.html" />
+            <fileset dir="." includes="*.html,*.css" />
             <arg value="-jar"/> 
             <arg path="${lib.dir}/htmlcompressor-1.5.2.jar"/> 
             <arg line="--remove-quotes"/> 
@@ -77,9 +107,7 @@
             <targetfile/> 
         </apply> 
         
-        <jscomp compilationLevel="simple" warning="verbose"
-            debug="false"
-            output="script.min.js">
+        <jscomp compilationLevel="simple" warning="verbose" debug="false" output="script.min.js">
             <externs dir="${lib.dir}">
                 <file name="${jquery-externs}"/>
             </externs>

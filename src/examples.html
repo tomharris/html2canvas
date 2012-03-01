@@ -1,15 +1,42 @@
-<!--
-* @author Niklas von Hertzen <niklas at hertzen.com>
-* @created 26.2.2012 
-* @website http://hertzen.com
--->
-<!DOCTYPE html>
-<html>
-    <head>
-        <title></title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
-</html>
+<h1>Examples</h1>
+<p>Below you can find a number of tests and examples using html2canvas. Feel free to <a href="https://github.com/niklasvh/html2canvas/tree/gh-pages">contribute</a> additional test cases and examples to this page.</p>
+
+<h2>Tests</h2>
+<ul id="testlist"></ul>
+<h2>Templates</h2>
+
+<div id="template-thumbs">
+    <span><a href="examples/artificial/index.html" class="thumbnail"><img src="examples/img/10.jpg" /></a></span>
+    <span><a href="examples/facing/index.html" class="thumbnail"><img src="examples/img/11.jpg" /></a></span>
+    <span><a href="examples/combination/index.html" class="thumbnail"><img src="examples/img/6.jpg" /></a></span>
+    <span><a href="examples/palmtrees/index.html" class="thumbnail"><img src="examples/img/7.jpg" /></a></span>
+    <span><a href="examples/dusky/index.html" class="thumbnail"><img src="examples/img/8.jpg" /></a></span>
+    <span><a href="examples/projection/index.html" class="thumbnail"><img src="examples/img/9.jpg" /></a></span>
+</div>
+
+<script>
+    var ul = $('#testlist');
+    $.each([
+        'background.html',
+        'borders.html',
+        'external-content.html',
+        'forms.html',
+        'images.html',
+        'lists.html',
+        'origin.html',
+        'overflow.html',
+        'proxy.html',
+        'text-linethrough.html',
+        'text-underline-lineheight.html',
+        'text-underline.html',
+        'text.html',
+        'visible-elements.html',
+        'z-index1.html',
+        'z-index2.html',
+        'z-index3.html'
+    ],function(i, e){
+        $('<li />').append(
+        $('<a />').text(e).attr('href','tests/' + e)
+    ).appendTo(ul);
+    });
+</script>

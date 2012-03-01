@@ -1,31 +1,15 @@
 <div class="row-fluid">
     <div class="span3">
         <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-                <li class="nav-header">Introduction</li>
-                <li class="active"><a href="#">How it works</a></li>
-                <li><a href="#">Limitations</a></li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-                <li class="nav-header">Getting Started</li>
-                <li><a href="#">Preload</a></li>
-                <li><a href="#">Parse</a></li>
-                <li><a href="#">Render</a></li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-                <li class="nav-header">Proxy</li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-                <li><a href="#">Link</a></li>
-            </ul>
+            <ul class="nav nav-list" id="doc-nav"></ul>
         </div><!--/.well -->
     </div><!--/span-->
     <div class="span9">
         <div class="hero-unit">
             <h1>Documentation</h1>
         </div>
-        <div class="row-fluid">
+        <div class="row-fluid" id="docs">
+
             <h2>Introduction</h2>
             <p>
                 Before you get started with the script, there are a few things that are good to know regarding the script and some of its limitations.
@@ -108,32 +92,33 @@
 
                 </tbody>
             </table>
-            
+
             <h4 style="font-style:italic;">returns</h4>
             <p>
                 The preload function returns an object containing a few helper methods which can be used load more images or clean the DOM.
             </p>
 
             <h3>Parse</h3>
-
+            <p>To be continued...</p>
 
         </div><!--/row-->
-        <div class="row-fluid">
-            <div class="span4">
-                <h2>Heading</h2>
-                <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div><!--/span-->
-            <div class="span4">
-                <h2>Heading</h2>
-                <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div><!--/span-->
-            <div class="span4">
-                <h2>Heading</h2>
-                <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-                <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div><!--/span-->
-        </div><!--/row-->
+
     </div><!--/span-->
 </div><!--/row-->
+
+
+<script>
+    var docNav = $("#doc-nav");
+    $("#docs h2, #docs h3").each(function(i,e){
+        var el = $(e);
+        if (e.nodeName === "H2") {
+            docNav.append($('<li />').addClass('nav-header').text(el.text()));
+        } else {
+            $("<a />").attr('name','doc-' + i).insertBefore(e);
+            docNav.append($('<li />').append(
+            $('<a />').text(el.text()).attr('href','#' + 'doc-' + i)
+        ));
+        }
+    });
+    
+</script>

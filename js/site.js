@@ -7,5 +7,5 @@
 
 $(function(){
     // init prettyprint
-   prettyPrint(); 
+   window.prettyPrint(); 
 });

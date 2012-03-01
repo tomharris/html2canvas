@@ -1,0 +1,206 @@
+
+<script type="text/javascript" src="js/html2canvas.js"></script>
+
+
+<script type="text/javascript"> 
+            
+    var date = new Date();
+    var message,
+    timeoutTimer,
+    timer;
+            
+    var proxyUrl = "http://html2canvas.appspot.com";
+            
+    function addRow(table,field,val){
+        var tr = $('<tr />').appendTo( $(table));
+               
+        tr.append($('<td />').css('font-weight','bold').text(field)).append($('<td />').text(val));
+                
+                
+                
+    }
+            
+    function throwMessage(msg,duration){
+            
+        window.clearTimeout(timeoutTimer);
+        timeoutTimer = window.setTimeout(function(){
+            message.fadeOut(function(){
+                message.remove();   
+            });                   
+        },duration || 2000);
+        $(message).remove();
+        message = $('<div />').html(msg).css({
+            margin:0,
+            padding:10,
+            background: "#000",
+            opacity:0.7,
+            position:"fixed",
+            top:10,
+            right:10,
+            fontFamily: 'Tahoma' ,
+            color:'#fff',
+            fontSize:12,
+            borderRadius:12,
+            width:'auto',
+            height:'auto',
+            textAlign:'center',
+            textDecoration:'none'
+        }).hide().fadeIn().appendTo('body');
+    }
+            
+    $(function(){
+                
+        $('ul li a').click(function(e){
+            e.preventDefault();
+            $('#url').val(this.href);
+            $('button').click();                  
+        })
+                
+        var iframe,d;
+                
+                
+
+                
+        $('input[type="button"]').click(function(){
+            $(iframe.contentWindow).unbind('load');
+            $(iframe).contents().find('body').html2canvas({
+                canvasHeight: d.body.scrollHeight,
+                canvasWidth: d.body.scrollWidth,
+                logging:true
+                                            
+            });             
+                    
+        });
+                
+        $('#getscreenshot').click(function(e){
+            e.preventDefault();
+            $(this).prop('disabled',true);
+            var url = $('#url').val();
+            $('#content').append($('<img />').attr('src','loading.gif').css('margin-top',40));
+                    
+            var urlParts = document.createElement('a');
+            urlParts.href = url;
+                    
+            $.ajax({
+                data: {
+                    xhr2:false,
+                    url:urlParts.href
+                            
+                },
+                url: proxyUrl,
+                dataType: "jsonp",
+                success: function(html){
+                            
+                            
+                    iframe = document.createElement('iframe');
+                    $(iframe).css({
+                        'visibility':'hidden'
+                    }).width($(window).width()).height($(window).height());
+                    $('#content').append(iframe);
+                    d = iframe.contentWindow.document; 
+                           
+                    d.open();
+                            
+                    $(iframe.contentWindow).load(function(){
+
+                        // timer = date.getTime();
+                                
+                        var date = new Date();
+                        var message,
+                        timeoutTimer,
+                        timer = date.getTime();
+                        var body = $(iframe).contents().find('body')[0];
+                        var preload = html2canvas.Preload(body, {
+                            "complete": function(images){
+                
+                                var queue = html2canvas.Parse(body, images);
+               
+                                var options = {};
+                                options.elements = body;
+                                
+                                options.flashcanvas = "../src/flashcanvas.min.js";
+               
+                
+                                var canvas = $(html2canvas.Renderer(queue, options));
+                                var finishTime = new Date();
+         
+          
+                                $("#content").empty().append(canvas);
+                                   
+                                //   throwMessage('Screenshot created in '+ ((finishTime.getTime()-timer)/1000) + " seconds<br />",4000);
+                            }
+                        });
+                    
+
+                    });
+
+                    $('base').attr('href',urlParts.protocol+"//"+urlParts.hostname+"/");
+                    html = html.replace("<head>","<head><base href='"+urlParts.protocol+"//"+urlParts.hostname+"/' />");
+                    if ($("#disablejs").prop('checked')){
+                        html = html.replace(/\<script/gi,"<!--<script");
+                        html = html.replace(/\<\/script\>/gi,"<\/script>-->");
+                    }
+                    // console.log(html);
+                    d.write(html);
+
+                    d.close();
+                         
+                }
+        
+        
+            });
+                    
+
+        });
+                   
+               
+                    
+          
+            
+    });        
+</script> 
+
+<!--    <div style="background:red;padding:10px;color:#fff">
+        App engine proxy is <a href="http://twitter.com/#!/Niklasvh/status/96265826713350144">temporarily out of use</a> due to exceeded bandwidth use. Please try again tomorrow or meanwhile check other examples <a href="http://html2canvas.hertzen.com/">here</a>.
+    </div>-->
+
+
+<h1>JavaScript screenshot creator</h1>
+<form class="well form-search">
+    <label for="url">Website URL:</label>
+    <input type="url" id="url" value="http://www.yahoo.com" class="input-medium search-query" /><button class="btn" id="getscreenshot">Get screenshot!</button>
+</form>
+
+
+
+<label for="disablejs">Disable JavaScript (recommended, doesn't work well with the proxy)</label> <input type="checkbox" id="disablejs" checked /><br />
+<small>Tested with Google Chrome 12, Firefox 4 and Opera 11.5</small>
+
+
+
+<h3>Recommended (tested) pages:</h3>
+
+<ul>
+
+    <li><a href="http://www.yahoo.com">yahoo.com</a></li>
+    <li><a href="http://www.google.com">google.com</a></li>
+    <li><a href="https://github.com/niklasvh/html2canvas">github.com</a></li>
+    <li><a href="http://www.smashingmagazine.com">smashingmagazine.com</a></li>
+    <li><a href="http://www.mashable.com">mashable.com</a></li>           
+    <li><a href="http://www.facebook.com/google">facebook.com/google</a></li>
+    <li><a href="http://www.youtube.com/">youtube.com</a></li>
+    <li><a href="http://www.cnn.com/">cnn.com</a></li>
+
+    <li><a href="http://www.engadget.com/">engadget.com (lot of elements, very slow)</a></li>
+    <li><a href="http://eu.battle.net/en/">battle.net</a></li>
+
+
+</ul>
+
+<h4> About</h4>
+<p>
+    The whole screenshot is created with JavaScript. The only server interaction that is happening on this page is the proxy for loading the external pages/images into JSONP/CORS enabled page and onwards onto the JavaScript renderer script.
+    There are a lot of problems of loading external pages, even with a proxy, and as such many pages will not render at all. If you wish to try the script properly, I recommend you get a copy of the source from <a href="https://github.com/niklasvh/html2canvas">here</a> instead.
+</p>
+<div id="content"></div>
+

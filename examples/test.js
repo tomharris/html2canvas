@@ -7,10 +7,10 @@
 */
 (function(document, window) {
   var scrStart = '<script type="text/javascript" src="', scrEnd = '"></script>';
-  document.write(scrStart + '../js/jquery-1.7.1.js' + scrEnd);
+  document.write(scrStart + '../../js/jquery-1.7.1.js' + scrEnd);
   var html2canvas = ['html2canvas', 'jquery.plugin.html2canvas'], i;
   for (i = 0; i < html2canvas.length; ++i) {
-    document.write(scrStart + '../js/' + html2canvas[i] + '.js' + scrEnd);
+    document.write(scrStart + '../../js/' + html2canvas[i] + '.js' + scrEnd);
   }
   window.onload = function() {
     if (window.setUp) {
