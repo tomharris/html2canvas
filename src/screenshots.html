@@ -50,7 +50,7 @@
             
     $(function(){
                 
-        $('ul li a').click(function(e){
+        $('#recommended a').click(function(e){
             e.preventDefault();
             $('#url').val(this.href);
             $('button').click();                  
@@ -105,11 +105,21 @@
 
                         // timer = date.getTime();
                                 
-                        var date = new Date();
-                        var message,
-                        timeoutTimer,
-                        timer = date.getTime();
-                        var body = $(iframe).contents().find('body')[0];
+                        var body = $(iframe).contents().find('body'),
+                        options = {
+                            onrendered: function( canvas ) {
+                                $("#content").empty().append(canvas);
+                            },
+                            flashcanvas: "src/flashcanvas.min.js"
+                        },
+                        html2obj;
+                            
+                                
+                                
+
+        
+                        html2obj = html2canvas(body, options);
+                        /*
                         var preload = html2canvas.Preload(body, {
                             "complete": function(images){
                 
@@ -129,7 +139,7 @@
                                    
                                 //   throwMessage('Screenshot created in '+ ((finishTime.getTime()-timer)/1000) + " seconds<br />",4000);
                             }
-                        });
+                        });*/
                     
 
                     });
@@ -180,7 +190,7 @@
 
 <h3>Recommended (tested) pages:</h3>
 
-<ul>
+<ul id="recommended">
 
     <li><a href="http://www.yahoo.com">yahoo.com</a></li>
     <li><a href="http://www.google.com">google.com</a></li>
