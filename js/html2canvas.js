@@ -1,5 +1,5 @@
 /**
-  @license html2canvas v0.32 <http://html2canvas.hertzen.com>
+  @license html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
@@ -8,28 +8,27 @@
 (function(window, document, undefined){
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
   Released under MIT License
 */
+"use strict";
 
-var html2canvas = {};
+var _html2canvas = {},
+html2canvas;
 
-html2canvas.logging = false;
 
 function h2clog(a) {
-    if (html2canvas.logging && window.console && window.console.log) {
+    if (_html2canvas.logging && window.console && window.console.log) {
         window.console.log(a);
     }
 }
 
-html2canvas.log = h2clog; // for compatibility with the jquery plugin
+_html2canvas.Util = {};
 
-html2canvas.Util = {};
-
-html2canvas.Util.backgroundImage = function (src) {
+_html2canvas.Util.backgroundImage = function (src) {
   
     if (/data:image\/.*;base64,/i.test( src ) || /^(-webkit|-moz|linear-gradient|-o-)/.test( src )) {
         return src;
@@ -46,7 +45,7 @@ html2canvas.Util.backgroundImage = function (src) {
     return src;  
 };
 
-html2canvas.Util.Bounds = function getBounds (el) {
+_html2canvas.Util.Bounds = function getBounds (el) {
     var clientRect,
     bounds = {};
         
@@ -79,9 +78,9 @@ html2canvas.Util.Bounds = function getBounds (el) {
             
 
         }     */      
-}
+};
 
-html2canvas.Util.getCSS = function (el, attribute) {
+_html2canvas.Util.getCSS = function (el, attribute) {
     // return jQuery(el).css(attribute);
     /*
     var val,
@@ -135,7 +134,7 @@ html2canvas.Util.getCSS = function (el, attribute) {
   
 };
 
-html2canvas.Util.Extend = function (options, defaults) {
+_html2canvas.Util.Extend = function (options, defaults) {
     var key;
     for (key in options) {              
         if (options.hasOwnProperty(key)) {
@@ -145,7 +144,7 @@ html2canvas.Util.Extend = function (options, defaults) {
     return defaults;           
 };
 
-html2canvas.Util.Children = function(el) {
+_html2canvas.Util.Children = function(el) {
     // $(el).contents() !== el.childNodes, Opera / IE have issues with that
     var children;
     try {
@@ -158,18 +157,18 @@ html2canvas.Util.Children = function(el) {
 };
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
   Released under MIT License
 */
 
-html2canvas.Generate = {};
+_html2canvas.Generate = {};
 
 
 
-html2canvas.Generate.Gradient = function(src, bounds) {
+_html2canvas.Generate.Gradient = function(src, bounds) {
     var canvas = document.createElement('canvas'),
     ctx = canvas.getContext('2d'),
     tmp, 
@@ -194,22 +193,24 @@ html2canvas.Generate.Gradient = function(src, bounds) {
         var j = -1, 
         color = '', 
         chr;
-        
         while( j++ < input.length ) {
             chr = input.charAt( j );
             if (chr === ')') {
                 color += chr;
                 steps.push( color );
                 color = '';
-                while (j++ < input.length && input.charAt( j ) !== ',') {
+                j = input.indexOf(",", j) + 1;
+                if (j === 0) {
+                    break;
                 }
+            //  while (j++ < input.length && input.charAt( j ) !== ',') {}
             } else {
                 color += chr;
             }
         }
     }
     
-    if ( tmp = src.match(/-webkit-linear-gradient\((.*)\)/) ) {
+    if ( (tmp = src.match(/-webkit-linear-gradient\((.*)\)/)) !== null ) {
         
         position = tmp[1].split( ",", 1 )[0];
         getColors( tmp[1].substr( position.length + 2 ) );
@@ -237,7 +238,7 @@ html2canvas.Generate.Gradient = function(src, bounds) {
             
         }
 
-    } else if (tmp = src.match(/-webkit-gradient\(linear, (\d+)[%]{0,1} (\d+)[%]{0,1}, (\d+)[%]{0,1} (\d+)[%]{0,1}, from\((.*)\), to\((.*)\)\)/)) {
+    } else if ( (tmp = src.match(/-webkit-gradient\(linear, (\d+)[%]{0,1} (\d+)[%]{0,1}, (\d+)[%]{0,1} (\d+)[%]{0,1}, from\((.*)\), to\((.*)\)\)/)) !== null ) {
         
         p0 = (tmp[1] * bounds.width) / 100;
         p1 = (tmp[2] * bounds.height) / 100;
@@ -247,7 +248,7 @@ html2canvas.Generate.Gradient = function(src, bounds) {
         steps.push(tmp[5]);
         steps.push(tmp[6]);
         
-    } else if (tmp = src.match(/-moz-linear-gradient\((\d+)[%]{0,1} (\d+)[%]{0,1}, (.*)\)/)) {
+    } else if ( (tmp = src.match(/-moz-linear-gradient\((\d+)[%]{0,1} (\d+)[%]{0,1}, (.*)\)/)) !== null ) {
         
         p0 = (tmp[1] * bounds.width) / 100;
         p1 = (tmp[2] * bounds.width) / 100;
@@ -281,9 +282,9 @@ html2canvas.Generate.Gradient = function(src, bounds) {
     
     return img;
 
-}
+};
 
-html2canvas.Generate.ListAlpha = function(number) {
+_html2canvas.Generate.ListAlpha = function(number) {
     var tmp = "",
     modulus;
     
@@ -294,9 +295,9 @@ html2canvas.Generate.ListAlpha = function(number) {
     }while((number*26) > 26);
    
     return tmp;  
-}
+};
 
-html2canvas.Generate.ListRoman = function(number) {
+_html2canvas.Generate.ListRoman = function(number) {
     var romanArray = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"],
     decimal = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1],
     roman = "",
@@ -316,10 +317,10 @@ html2canvas.Generate.ListRoman = function(number) {
         
     return roman;
    
-}
+};
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
@@ -330,26 +331,13 @@ html2canvas.Generate.ListRoman = function(number) {
  *  New function for traversing elements
  */
 
-html2canvas.Parse = function (element, images, opts) {
+_html2canvas.Parse = function ( images, options ) {
     window.scroll(0,0);
-    opts = opts || {};
   
-    // select body by default
-    if (element === undefined) {
-        element = document.body;
-    }
-    
-    
     var support = {
         rangeBounds: false
-        
     },
-    options = {
-        iframeDefault: "default",
-        ignoreElements: "IFRAME|OBJECT|PARAM",
-        useOverflow: true,
-        letterRendering: false
-    },
+    element = (( options.elements === undefined ) ? document.body : options.elements[0]), // select body by default
     needReorder = false,
     numDraws = 0,
     fontData = {},
@@ -367,7 +355,7 @@ html2canvas.Parse = function (element, images, opts) {
     children,
     childrenLen;
     
-    options = html2canvas.Util.Extend(opts, options);
+
 
     images = images || {};
     
@@ -426,7 +414,7 @@ html2canvas.Parse = function (element, images, opts) {
         
     }
 
-    var getCSS = html2canvas.Util.getCSS;
+    var getCSS = _html2canvas.Util.getCSS;
     function getCSSInt(element, attribute) {
         var val = parseInt(getCSS(element, attribute), 10);
         return (isNaN(val)) ? 0 : val; // borders in old IE are throwing 'medium' for demo.html 
@@ -674,7 +662,7 @@ html2canvas.Parse = function (element, images, opts) {
                     wrapElement.appendChild(oldTextNode.cloneNode(true));
                     parent.replaceChild(wrapElement, oldTextNode);
                                     
-                    bounds = html2canvas.Util.Bounds(wrapElement);
+                    bounds = _html2canvas.Util.Bounds(wrapElement);
                         
                     textValue = oldTextNode.nodeValue;
                         
@@ -736,7 +724,7 @@ html2canvas.Parse = function (element, images, opts) {
         element.insertBefore(boundElement, element.firstChild);
 
     
-        bounds = html2canvas.Util.Bounds( boundElement );
+        bounds = _html2canvas.Util.Bounds( boundElement );
         element.removeChild( boundElement );
         element.style.listStyleType = type;
         return bounds;
@@ -773,16 +761,16 @@ html2canvas.Parse = function (element, images, opts) {
                     }     
                     break;
                 case "upper-roman":
-                    text = html2canvas.Generate.ListRoman( currentIndex );
+                    text = _html2canvas.Generate.ListRoman( currentIndex );
                     break;
                 case "lower-roman":
-                    text = html2canvas.Generate.ListRoman( currentIndex ).toLowerCase();
+                    text = _html2canvas.Generate.ListRoman( currentIndex ).toLowerCase();
                     break;
                 case "lower-alpha":
-                    text = html2canvas.Generate.ListAlpha( currentIndex ).toLowerCase();  
+                    text = _html2canvas.Generate.ListAlpha( currentIndex ).toLowerCase();  
                     break;
                 case "upper-alpha":
-                    text = html2canvas.Generate.ListAlpha( currentIndex );  
+                    text = _html2canvas.Generate.ListAlpha( currentIndex );  
                     break;
             }
 
@@ -815,20 +803,21 @@ html2canvas.Parse = function (element, images, opts) {
                 
             }else{
                 return; 
-                /* 
+            /* 
                  TODO really need to figure out some more accurate way to try and find the position. 
                  as defined in http://www.w3.org/TR/CSS21/generate.html#propdef-list-style-position, it does not even have a specified "correct" position, so each browser 
                  may display it whatever way it feels like. 
                  "The position of the list-item marker adjacent to floats is undefined in CSS 2.1. CSS 2.1 does not specify the precise location of the marker box or its position in the painting order"
-                */
+                
                 ctx.setVariable("textAlign", "right");
                 //  this.setFont(stack.ctx, element, true);
                 x = elBounds.left - 10;
+                 */
             }
         
             y = listBounds.bottom;
     
-            drawText(text, x, y, ctx)
+            drawText(text, x, y, ctx);
  
         
         }
@@ -837,12 +826,12 @@ html2canvas.Parse = function (element, images, opts) {
     }
     
     function loadImage (src){
-      var img = images[src];
-      if (img && img.succeeded === true) {
-        return img.img;
-      } else {
-        return false;
-      }
+        var img = images[src];
+        if (img && img.succeeded === true) {
+            return img.img;
+        } else {
+            return false;
+        }
     }
     
     
@@ -868,15 +857,15 @@ html2canvas.Parse = function (element, images, opts) {
     
     function setZ(zIndex, parentZ){
         // TODO fix static elements overlapping relative/absolute elements under same stack, if they are defined after them
-        
+        var newContext;
         if (!parentZ){
-            this.zStack = h2czContext(0);
-            return this.zStack;
+            newContext = h2czContext(0);
+            return newContext;
         }
     
         if (zIndex !== "auto"){
             needReorder = true;
-            var newContext = h2czContext(zIndex);
+            newContext = h2czContext(zIndex);
             parentZ.children.push(newContext);     
             return newContext;
         
@@ -989,7 +978,7 @@ html2canvas.Parse = function (element, images, opts) {
             style = cssArr[i];
 
             try {
-            valueWrap.style[style] = getCSS(el, style);
+                valueWrap.style[style] = getCSS(el, style);
             } catch( e ) {
                 // Older IE has issues with "border"
                 h2clog("html2canvas: Parse: Exception caught in renderFormValue: " + e.message);
@@ -1038,8 +1027,8 @@ html2canvas.Parse = function (element, images, opts) {
             if (bgp !== undefined) {
                 return (bgp.split(",")[0] || "0 0").split(" ");
             } else {
-               // Older IE uses -x and -y 
-               return [ getCSS(el, "backgroundPositionX"), getCSS(el, "backgroundPositionY") ];
+                // Older IE uses -x and -y 
+                return [ getCSS(el, "backgroundPositionX"), getCSS(el, "backgroundPositionY") ];
             }
             
             
@@ -1202,7 +1191,7 @@ html2canvas.Parse = function (element, images, opts) {
         }
         
         if ( typeof background_image !== "undefined" && /^(1|none)$/.test( background_image ) === false ) {
-            background_image = html2canvas.Util.backgroundImage( background_image );
+            background_image = _html2canvas.Util.backgroundImage( background_image );
             image = loadImage( background_image );
 					
 
@@ -1265,9 +1254,7 @@ html2canvas.Parse = function (element, images, opts) {
                             bgsy = 0;
                         }    
     
-                  
-                        //   bgh = Math.abs(bgh);
-                        //   bgw = Math.abs(bgw);
+
                         if (bgh>0 && bgw > 0){        
                             renderImage(
                                 ctx,
@@ -1281,9 +1268,7 @@ html2canvas.Parse = function (element, images, opts) {
                                 bgw, // destination width : 18
                                 bgh // destination height : 1677
                                 );
-                            
-                        // ctx.drawImage(image,(bounds.left+bgp.left),(bounds.top+bgp.top));	                      
-                            
+                                                                       
                         }
                         break;
                     default:
@@ -1337,7 +1322,7 @@ html2canvas.Parse = function (element, images, opts) {
  
     function renderElement(el, parentStack){
 		
-        var bounds = html2canvas.Util.Bounds(el), 
+        var bounds = _html2canvas.Util.Bounds(el), 
         x = bounds.left, 
         y = bounds.top, 
         w = bounds.width, 
@@ -1386,7 +1371,7 @@ html2canvas.Parse = function (element, images, opts) {
         // TODO correct overflow for absolute content residing under a static position
         
         if (parentStack.clip){
-            stack.clip = html2canvas.Util.Extend( {}, parentStack.clip );
+            stack.clip = _html2canvas.Util.Extend( {}, parentStack.clip );
         //stack.clip = parentStack.clip;
         //   stack.clip.height = stack.clip.height - parentStack.borders[2].width;
         } 
@@ -1539,7 +1524,7 @@ html2canvas.Parse = function (element, images, opts) {
                     y + paddingTop + borders[0].width, // dy
                     bounds.width - (borders[1].width + borders[3].width + paddingLeft + paddingRight), //dw
                     bounds.height - (borders[0].width + borders[2].width + paddingTop + paddingBottom) //dh
-                );
+                    );
                 break;
         }
 
@@ -1558,7 +1543,7 @@ html2canvas.Parse = function (element, images, opts) {
             ctx = stack.ctx;
     
             if ( !ignoreElementsRegExp.test( el.nodeName ) ) {
-                var elementChildren = html2canvas.Util.Children( el ),
+                var elementChildren = _html2canvas.Util.Children( el ),
                 i,
                 node,
                 childrenLen;
@@ -1596,25 +1581,19 @@ function h2czContext(zindex) {
         zindex: zindex,
         children: []
     };  
-};
+}
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
   Released under MIT License
 */
 
-html2canvas.Preload = function(element, opts){
+_html2canvas.Preload = function( options ) {
     
-    var options = {
-        proxy: "http://html2canvas.appspot.com/",
-        timeout: 0,    // no timeout
-        useCORS: false, // try to load images as CORS (where available), before falling back to proxy
-        allowTaint: false // whether to allow images to taint the canvas, won't need proxy if set to true
-    },
-    images = {
+    var images = {
         numLoaded: 0,   // also failed are counted here
         numFailed: 0,
         numTotal: 0,
@@ -1624,6 +1603,7 @@ html2canvas.Preload = function(element, opts){
     methods,
     i,
     count = 0,
+    element = options.elements[0] || document.body,
     doc = element.ownerDocument,
     domImages = doc.images, // TODO probably should limit it to images present in the element only
     imgLen = domImages.length,
@@ -1635,13 +1615,11 @@ html2canvas.Preload = function(element, opts){
 
     link.href = window.location.href;
     pageOrigin  = link.protocol + link.host;
-    opts = opts || {};
+
     
-    options = html2canvas.Util.Extend(opts, options);
+ 
     
    
-    
-    element = element || doc.body;
     
     function isSameOrigin(url){
         link.href = url;  
@@ -1653,12 +1631,7 @@ html2canvas.Preload = function(element, opts){
     function start(){
         h2clog("html2canvas: start: images: " + images.numLoaded + " / " + images.numTotal + " (failed: " + images.numFailed + ")");
         if (!images.firstRun && images.numLoaded >= images.numTotal){
-        
-            /*
-            this.log('Finished loading '+this.imagesLoaded+' images, Started parsing');
-            this.bodyOverflow = document.getElementsByTagName('body')[0].style.overflow;
-            document.getElementsByTagName('body')[0].style.overflow = "hidden";
-            */
+            
             if (typeof options.complete === "function"){
                 options.complete(images);
             }
@@ -1721,7 +1694,7 @@ html2canvas.Preload = function(element, opts){
         // if (!this.ignoreRe.test(el.nodeName)){
         // 
 
-        var contents = html2canvas.Util.Children(el),
+        var contents = _html2canvas.Util.Children(el),
         i,
         contentsLen = contents.length,
         background_image,
@@ -1748,7 +1721,7 @@ html2canvas.Preload = function(element, opts){
             
             // opera throws exception on external-content.html
             try {
-                background_image = html2canvas.Util.getCSS(el, 'backgroundImage');
+                background_image = _html2canvas.Util.getCSS(el, 'backgroundImage');
             }catch(e) {
                 h2clog("html2canvas: failed to get background-image - Exception: " + e.message);
             }
@@ -1758,7 +1731,7 @@ html2canvas.Preload = function(element, opts){
                 
                 if (background_image.substring(0,7) === "-webkit" || background_image.substring(0,3) === "-o-" || background_image.substring(0,4) === "-moz") {
                   
-                    img = html2canvas.Generate.Gradient( background_image, html2canvas.Util.Bounds( el ) );
+                    img = _html2canvas.Generate.Gradient( background_image, _html2canvas.Util.Bounds( el ) );
 
                     if ( img !== undefined ){
                         images[background_image] = {
@@ -1772,8 +1745,8 @@ html2canvas.Preload = function(element, opts){
                     }
                     
                 } else {	
-                    src = html2canvas.Util.backgroundImage(background_image.match(/data:image\/.*;base64,/i) ? background_image : background_image.split(",")[0]);		
-                    methods.loadImage(src); 		
+                    src = _html2canvas.Util.backgroundImage(background_image.match(/data:image\/.*;base64,/i) ? background_image : background_image.split(",")[0]);		
+                    methods.loadImage(src);
                 }
            
             /*
@@ -1798,7 +1771,7 @@ html2canvas.Preload = function(element, opts){
         img.onerror = function() {
             
             if (img.crossOrigin === "anonymous") {
-               // CORS failed
+                // CORS failed
                 window.clearTimeout( imageObj.timer );
 
                 // let's try with proxy instead
@@ -1822,14 +1795,6 @@ html2canvas.Preload = function(element, opts){
         };
     }
     
-    // work around for https://bugs.webkit.org/show_bug.cgi?id=80028
-    function isComplete() {
-       if (!this.img.complete) { 
-           this.timer = window.setTimeout(this.img.customComplete, 100) 
-       } else { 
-           this.img.onerror();         
-       }
-    }
 
     methods = {
         loadImage: function( src ) {
@@ -1838,11 +1803,15 @@ html2canvas.Preload = function(element, opts){
                 img = new Image();                
                 if ( src.match(/data:image\/.*;base64,/i) ) {
                     img.src = src.replace(/url\(['"]{0,}|['"]{0,}\)$/ig, '');
-                    imageObj = images[src] = { img: img };
+                    imageObj = images[src] = {
+                        img: img
+                    };
                     images.numTotal++;
                     setImageLoadHandlers(img, imageObj);
                 } else if ( isSameOrigin( src ) || options.allowTaint ===  true ) {                    
-                    imageObj = images[src] = { img: img };
+                    imageObj = images[src] = {
+                        img: img
+                    };
                     images.numTotal++;
                     setImageLoadHandlers(img, imageObj);
                     img.src = src;
@@ -1850,16 +1819,27 @@ html2canvas.Preload = function(element, opts){
                     // attempt to load with CORS
                     
                     img.crossOrigin = "anonymous";    
-                    imageObj = images[src] = { img: img };
+                    imageObj = images[src] = {
+                        img: img
+                    };
                     images.numTotal++;
                     setImageLoadHandlers(img, imageObj);
-                    img.src = src;             
+                    img.src = src;           
                     
-                    img.customComplete = isComplete.bind(imageObj);  
+                    // work around for https://bugs.webkit.org/show_bug.cgi?id=80028
+                    img.customComplete = function () {
+                        if (!this.img.complete) { 
+                            this.timer = window.setTimeout(this.img.customComplete, 100);
+                        } else { 
+                            this.img.onerror();         
+                        }
+                    }.bind(imageObj);  
                     img.customComplete();
                     
                 } else if ( options.proxy ) {
-                    imageObj = images[src] = { img: img };
+                    imageObj = images[src] = {
+                        img: img
+                    };
                     images.numTotal++;
                     proxyGetImage( src, img, imageObj );
                 }
@@ -1946,7 +1926,7 @@ html2canvas.Preload = function(element, opts){
 
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
@@ -1990,28 +1970,21 @@ function h2cRenderContext(width, height) {
 }
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
   Released under MIT License
 */
-html2canvas.Renderer = function(parseQueue, opts){
+_html2canvas.Renderer = function(parseQueue, options){
 
 
-    var options = {
-        "width": null,
-        "height": null,
-        "renderer": "canvas",
-        "taintTest": true // do a taint test with all images before applying to canvas
-    },
-    queue = [],
+    var queue = [],
     canvas,
     usingFlashcanvas = false,
     flashMaxSize = 2880, // flash bitmap limited to 2880x2880px // http://stackoverflow.com/questions/2033792/argumenterror-error-2015-invalid-bitmapdata
     doc = document;
     
-    options = html2canvas.Util.Extend(opts, options);
 
 
     
@@ -2172,31 +2145,31 @@ html2canvas.Renderer = function(parseQueue, opts){
         
         // this.canvasRenderStorage(queue,this.ctx);
         queueLen = options.elements.length;
-        
+
         if (queueLen === 1) {
             if (typeof options.elements[ 0 ] === "object" && options.elements[ 0 ].nodeName !== "BODY" && usingFlashcanvas === false) {
                 // crop image to the bounds of selected (single) element
-                bounds = html2canvas.Util.Bounds( options.elements[ 0 ] );
+                bounds = _html2canvas.Util.Bounds( options.elements[ 0 ] );
                 newCanvas = doc.createElement('canvas');
                 newCanvas.width = bounds.width;
                 newCanvas.height = bounds.height;
                 ctx = newCanvas.getContext("2d");
                 
                 ctx.drawImage( canvas, bounds.left, bounds.top, bounds.width, bounds.height, 0, 0, bounds.width, bounds.height );
-                delete canvas;
+                canvas = null;
                 return newCanvas;
             }
-        } else {
+        } /*else {
         // TODO clip and resize multiple elements
-        /*
+        
             for ( i = 0; i < queueLen; i+=1 ) {
                 if (options.elements[ i ] instanceof Element) {
                 
                 }
               
-            }*/
+            }
         }
-        
+        */
        
        
         
@@ -2471,12 +2444,90 @@ html2canvas.Renderer = function(parseQueue, opts){
 };
 
 /*
-  html2canvas v0.32 <http://html2canvas.hertzen.com>
+  html2canvas v0.33 <http://html2canvas.hertzen.com>
   Copyright (c) 2011 Niklas von Hertzen. All rights reserved.
   http://www.twitter.com/niklasvh
 
   Released under MIT License
 */
+
+
+html2canvas = function( elements, opts ) {
+    
+    var queue,
+    canvas,
+    options = {
+        // general
+        logging: false,
+        elements: elements,
+        
+        // preload options
+        proxy: "http://html2canvas.appspot.com/",
+        timeout: 0,    // no timeout
+        useCORS: false, // try to load images as CORS (where available), before falling back to proxy
+        allowTaint: false, // whether to allow images to taint the canvas, won't need proxy if set to true
+        
+        // parse options
+        iframeDefault: "default",
+        ignoreElements: "IFRAME|OBJECT|PARAM",
+        useOverflow: true,
+        letterRendering: false,
+
+        // render options
+
+        width: null,
+        height: null,
+        renderer: "canvas",
+        taintTest: true // do a taint test with all images before applying to canvas
+
+    };
+    
+    options = _html2canvas.Util.Extend(opts, options);
+    
+    _html2canvas.logging = options.logging;
+    options.complete = function( images ) {
+        
+        if (typeof options.onpreloaded === "function") {
+            if ( options.onpreloaded( images ) === false ) {
+                return;
+            }
+        }
+        queue = _html2canvas.Parse( images, options );
+            
+        if (typeof options.onparsed === "function") {
+            if ( options.onparsed( queue ) === false ) {
+                return;
+            }
+        }
+          
+        canvas = _html2canvas.Renderer( queue, options );
+        
+        if (typeof options.onrendered === "function") {
+            options.onrendered( canvas );
+        }
+        
+        
+    };
+    
+    // for pages without images, we still want this to be async, i.e. return methods before executing
+    window.setTimeout( function(){
+        _html2canvas.Preload( options );
+    }, 0 ); 
+        
+    return {
+        render: function( queue, opts ) {
+            return _html2canvas.Renderer( queue, _html2canvas.Util.Extend(opts, options) );
+        },
+        parse: function( images, opts ) {
+            return _html2canvas.Parse( images, _html2canvas.Util.Extend(opts, options) );
+        },
+        preload: function( opts ) {
+            return _html2canvas.Preload( _html2canvas.Util.Extend(opts, options) );
+        },
+        log: h2clog
+    };
+};
+
 window.html2canvas = html2canvas;
 }(window, document));
 
