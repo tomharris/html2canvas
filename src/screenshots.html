@@ -110,36 +110,12 @@
                             onrendered: function( canvas ) {
                                 $("#content").empty().append(canvas);
                             },
+                            allowTaint: true,
+                            taintTest: false,
                             flashcanvas: "src/flashcanvas.min.js"
                         },
-                        html2obj;
-                            
-                                
-                                
-
-        
                         html2obj = html2canvas(body, options);
-                        /*
-                        var preload = html2canvas.Preload(body, {
-                            "complete": function(images){
-                
-                                var queue = html2canvas.Parse(body, images);
-               
-                                var options = {};
-                                options.elements = body;
-                                
-                                options.flashcanvas = "../src/flashcanvas.min.js";
-               
-                
-                                var canvas = $(html2canvas.Renderer(queue, options));
-                                var finishTime = new Date();
-         
-          
-                                $("#content").empty().append(canvas);
-                                   
-                                //   throwMessage('Screenshot created in '+ ((finishTime.getTime()-timer)/1000) + " seconds<br />",4000);
-                            }
-                        });*/
+
                     
 
                     });
