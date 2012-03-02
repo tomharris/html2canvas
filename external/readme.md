@@ -1,0 +1,1 @@
+For information on how to use FlashCanvas, please visit http://flashcanvas.net/
