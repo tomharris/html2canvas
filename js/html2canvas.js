@@ -162,7 +162,7 @@ _html2canvas.Util.Children = function(el) {
   http://www.twitter.com/niklasvh
 
   Released under MIT License
-*/
+ */
 
 _html2canvas.Generate = {};
 
@@ -188,7 +188,7 @@ _html2canvas.Generate.Gradient = function(src, bounds) {
     canvas.width = bounds.width;
     canvas.height = bounds.height;
     
-
+    
     function getColors(input) {      
         var j = -1, 
         color = '', 
@@ -209,16 +209,27 @@ _html2canvas.Generate.Gradient = function(src, bounds) {
             }
         }
     }
-    
+     
+   /*
+    function getColors(input) {
+        var colors = input.match(/#[a-fA-F0-9]{3,6}|rgb\s*\(\s*\d{0,3}\s*,\s*\d{0,3}\s*,\s*\d{0,3}\s*\)/g),
+        len = colors.length,
+        i;
+        
+        for( i = 0; i < len; i+=1 ) {
+            steps.push( colors[ i ] );
+        }
+    }*/
+   
     if ( (tmp = src.match(/-webkit-linear-gradient\((.*)\)/)) !== null ) {
         
         position = tmp[1].split( ",", 1 )[0];
         getColors( tmp[1].substr( position.length + 2 ) );
         position = position.split(' ');
         
-        for (p = 0; p < position.length; p+=1) {
+        for ( p = 0, len = position.length; p < len; p+=1 ) {
             
-            switch(position[p]) {
+            switch( position[ p ] ) {
                 case 'top':
                     p3 = bounds.height;
                     break;
@@ -546,6 +557,7 @@ _html2canvas.Parse = function ( images, options ) {
         text,
         metrics,
         renderList,
+        listLen,
         bold = getCSS(el, "fontWeight"),
         font_style = getCSS(el, "fontStyle"),
         font_variant = getCSS(el, "fontVariant"),
@@ -619,7 +631,7 @@ _html2canvas.Parse = function ( images, options ) {
             oldTextNode = textNode;
            
             
-            for (c=0; c < renderList.length; c+=1) {
+            for ( c=0, listLen = renderList.length; c < listLen; c+=1 ) {
                 textValue = null;
     
      
@@ -2134,6 +2146,7 @@ html2canvas.Renderer = {
 
   Released under MIT License
 */
+
 
 html2canvas.Renderer.Canvas = function( options ) {
 

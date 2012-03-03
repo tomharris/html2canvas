@@ -49,7 +49,7 @@
     }
             
     $(function(){
-                
+               
         $('#recommended a').click(function(e){
             e.preventDefault();
             $('#url').val(this.href);
@@ -107,15 +107,18 @@
                                 
                         var body = $(iframe).contents().find('body'),
                         options = {
+
                             onrendered: function( canvas ) {
                                 $("#content").empty().append(canvas);
+                                $('#getscreenshot').prop('disabled', false);
+                                $('base').attr('href',"");
                             },
                             allowTaint: true,
                             taintTest: false,
                             flashcanvas: "src/flashcanvas.min.js"
                         },
                         html2obj = html2canvas(body, options);
-
+                        
                     
 
                     });
@@ -126,7 +129,7 @@
                         html = html.replace(/\<script/gi,"<!--<script");
                         html = html.replace(/\<\/script\>/gi,"<\/script>-->");
                     }
-                    // console.log(html);
+                     
                     d.write(html);
 
                     d.close();
