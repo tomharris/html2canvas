@@ -77,7 +77,6 @@
             <filelist dir="${js.dir}">
                 <file name="bootstrap.js"/>
                 <file name="prettify.js"/> 
-                <file name="jquery.history.js"/> 
                 <file name="site.js"/> 
             </filelist>
         </concat>
