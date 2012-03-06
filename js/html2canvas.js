@@ -13,7 +13,7 @@
   http://www.twitter.com/niklasvh
 
   Released under MIT License
-*/
+ */
 "use strict";
 
 var _html2canvas = {},
@@ -64,74 +64,153 @@ _html2canvas.Util.Bounds = function getBounds (el) {
     
         return bounds;
             
-    }  /*else{
-           
-           
-            p = $(el).offset();       
-          
-            return {               
-                left: p.left + getCSS(el,"borderLeftWidth", true),
-                top: p.top + getCSS(el,"borderTopWidth", true),
-                width:$(el).innerWidth(),
-                height:$(el).innerHeight()                
-            };
-            
-
-        }     */      
+    }       
 };
 
 _html2canvas.Util.getCSS = function (el, attribute) {
-    // return jQuery(el).css(attribute);
-    /*
-    var val,
-    left,
-    rsLeft = el.runtimeStyle && el.runtimeStyle[ attribute ],
-    style = el.style;
+    // return $(el).css(attribute);
     
-    if ( el.currentStyle ) {
-        val = el.currentStyle[ attribute ];
-    } else if (window.getComputedStyle) {
-        val = document.defaultView.getComputedStyle(el, null)[ attribute ];
-    }
-    */
-    // Check if we are not dealing with pixels, (Opera has issues with this)
-    // Ported from jQuery css.js
-    // From the awesome hack by Dean Edwards
-    // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
-
-    // If we're not dealing with a regular pixel number
-    // but a number that has a weird ending, we need to convert it to pixels
+    var val;
     
-    // if ( !/^-?\d+(?:px)?$/i.test( val ) && /^-?\d/.test( val ) ) {
-    /*
-        // Remember the original values
-        left = style.left;
+    function toPX( attribute, val ) {
+        var rsLeft = el.runtimeStyle && el.runtimeStyle[ attribute ],
+        left,
+        style = el.style;
+                
+        // Check if we are not dealing with pixels, (Opera has issues with this)
+        // Ported from jQuery css.js
+        // From the awesome hack by Dean Edwards
+        // http://erik.eae.net/archives/2007/07/27/18.54.15/#comment-102291
 
-        // Put in the new values to get a computed value out
-        if ( rsLeft ) {
-            el.runtimeStyle.left = el.currentStyle.left;
+        // If we're not dealing with a regular pixel number
+        // but a number that has a weird ending, we need to convert it to pixels   
+        
+        if ( !/^-?[0-9]+\.?[0-9]*(?:px)?$/i.test( val ) && /^-?\d/.test( val ) ) {
+
+            // Remember the original values
+            left = style.left;
+
+            // Put in the new values to get a computed value out
+            if ( rsLeft ) {
+                el.runtimeStyle.left = el.currentStyle.left;
+            }
+            style.left = attribute === "fontSize" ? "1em" : (val || 0);
+            val = style.pixelLeft + "px";
+
+            // Revert the changed values
+            style.left = left;
+            if ( rsLeft ) {
+                el.runtimeStyle.left = rsLeft;
+            }
+
         }
-        style.left = attribute === "fontSize" ? "1em" : (val || 0);
-        val = style.pixelLeft + "px";
+        
+        if (!/^(thin|medium|thick)$/i.test( val )) {
+            return Math.round(parseFloat( val )) + "px";
+        } 
+        
+        return val;
+     
+    }
+    
+    
+    if ( window.getComputedStyle ) {
+        val = document.defaultView.getComputedStyle(el, null)[ attribute ];
+        
+        if ( attribute === "backgroundPosition" ) {
+            
+            val = (val.split(",")[0] || "0 0").split(" ");
+          
+            val[ 0 ] = ( val[0].indexOf( "%" ) === -1 ) ? toPX(  attribute + "X", val[ 0 ] ) : val[ 0 ];
+            val[ 1 ] = ( val[1] === undefined ) ? val[0] : val[1]; // IE 9 doesn't return double digit always
+            val[ 1 ] = ( val[1].indexOf( "%" ) === -1 ) ? toPX(  attribute + "Y", val[ 1 ] ) : val[ 1 ];
+        } 
+        
+    } else if ( el.currentStyle ) {
+        // IE 9>       
+        if (attribute === "backgroundPosition") {
+            // Older IE uses -x and -y 
+            val = [ toPX(  attribute + "X", el.currentStyle[ attribute + "X" ]  ), toPX(  attribute + "Y", el.currentStyle[ attribute + "Y" ]  ) ];  
+        } else {
 
-        // Revert the changed values
-        style.left = left;
-        if ( rsLeft ) {
-            el.runtimeStyle.left = rsLeft;
-        }*/
-    // val = $(el).css(attribute);
-    // }
+            val = toPX(  attribute, el.currentStyle[ attribute ]  );
+            
+            if (/^(border)/i.test( attribute ) && /^(medium|thin|thick)$/i.test( val )) {
+                switch (val) {
+                    case "thin":
+                        val = "1px";
+                        break;
+                    case "medium":
+                        val = "0px"; // this is wrong, it should be 3px but IE uses medium for no border as well.. TODO find a work around
+                        break;
+                    case "thick":
+                        val = "5px";
+                        break;
+                }
+            }    
+        }
+
+
+
+    }
+
+
+
     
-    /*
-    var val = $(el).css(attribute);
+    return val;
     
-    if (val === "medium") {
-        val = 3;
-    }*/
+
     
-    return $(el).css(attribute);
+//return $(el).css(attribute);
     
   
+};
+
+
+_html2canvas.Util.BackgroundPosition = function ( el, bounds, image ) {
+    // TODO add support for multi image backgrounds
+    
+    var bgposition =  _html2canvas.Util.getCSS( el, "backgroundPosition" ) ,
+    topPos,
+    left,
+    percentage,
+    val;
+    
+    if (bgposition.length === 1){
+        val = bgposition;
+            
+        bgposition = [];
+        
+        bgposition[0] = val;
+        bgposition[1] = val;
+    }  
+
+    
+
+    if (bgposition[0].toString().indexOf("%") !== -1){    
+        percentage = (parseFloat(bgposition[0])/100);        
+        left =  ((bounds.width * percentage)-(image.width*percentage));
+      
+    }else{
+        left = parseInt(bgposition[0],10);
+    }
+
+    if (bgposition[1].toString().indexOf("%") !== -1){  
+
+        percentage = (parseFloat(bgposition[1])/100);     
+        topPos =  ((bounds.height * percentage)-(image.height*percentage));
+    }else{      
+        topPos = parseInt(bgposition[1],10);      
+    }
+
+    
+
+           
+    return {
+        top: topPos,
+        left: left
+    };
+         
 };
 
 _html2canvas.Util.Extend = function (options, defaults) {
@@ -148,10 +227,12 @@ _html2canvas.Util.Children = function(el) {
     // $(el).contents() !== el.childNodes, Opera / IE have issues with that
     var children;
     try {
-      children = $(el).contents();
+        children = $(el).contents();
+    //children = (el.nodeName && el.nodeName.toUpperCase() === "IFRAME") ? el.contentDocument || el.contentWindow.document :  el.childNodes ;
+       
     } catch (ex) {
-      h2clog("html2canvas.Util.Children failed with exception: " + ex.message);
-      children = [];
+        h2clog("html2canvas.Util.Children failed with exception: " + ex.message);
+        children = [];
     }
     return children;
 };
@@ -209,18 +290,7 @@ _html2canvas.Generate.Gradient = function(src, bounds) {
             }
         }
     }
-     
-   /*
-    function getColors(input) {
-        var colors = input.match(/#[a-fA-F0-9]{3,6}|rgb\s*\(\s*\d{0,3}\s*,\s*\d{0,3}\s*,\s*\d{0,3}\s*\)/g),
-        len = colors.length,
-        i;
-        
-        for( i = 0; i < len; i+=1 ) {
-            steps.push( colors[ i ] );
-        }
-    }*/
-   
+      
     if ( (tmp = src.match(/-webkit-linear-gradient\((.*)\)/)) !== null ) {
         
         position = tmp[1].split( ",", 1 )[0];
@@ -347,6 +417,35 @@ _html2canvas.Parse = function ( images, options ) {
   
     var support = {
         rangeBounds: false
+        /*,svgRendering: (function( ){
+            var img = new Image(),
+            canvas = document.createElement("canvas"),
+            ctx = (canvas.getContext === undefined) ? false : canvas.getContext("2d");
+            if (ctx === false) {
+                // browser doesn't support canvas, good luck supporting SVG on canvas
+                return false;
+            }
+            canvas.width = canvas.height = 10; 
+            img.src = [
+            "data:image/svg+xml,",
+            "<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'>",
+            "<foreignObject width='10' height='10'>",
+            "<div xmlns='http://www.w3.org/1999/xhtml' style='width:10;height:10;'>",
+            "sup",
+            "</div>",
+            "</foreignObject>",
+            "</svg>"
+            ].join("");
+            try {
+                ctx.drawImage(img, 0, 0);
+                canvas.toDataURL();
+            } catch(e) {
+                return false;
+            }
+            h2clog('html2canvas: Parse: SVG powered rendering available');
+            return true; 
+            
+        })()*/
     },
     element = (( options.elements === undefined ) ? document.body : options.elements[0]), // select body by default
     needReorder = false,
@@ -366,8 +465,86 @@ _html2canvas.Parse = function ( images, options ) {
     children,
     childrenLen;
     
-
-
+    /*
+    SVG powered HTML rendering, non-tainted canvas available from FF 11+ onwards,
+    but due to bug https://bugzilla.mozilla.org/show_bug.cgi?id=733345 excluding this code out for now
+    
+    if (support.svgRendering || true) {
+        (function( body, width, height ){
+            var img = new Image(),
+            html = "";
+           
+            function parseDOM( el ) {
+                var children = _html2canvas.Util.Children( el ),
+                len = children.length,
+                attr,
+                a,
+                alen,
+                elm,
+                i;
+                for ( i = 0; i < len; i+=1 ) {
+                    elm = children[ i ];
+                    if ( elm.nodeType === 3 ) {
+                        // Text node
+                        
+                        html += elm.nodeValue.replace(/\</g,"&lt;").replace(/\>/g,"&gt;");
+                    } else if ( elm.nodeType === 1 ) {
+                        // Element
+                        if ( !/^(script|meta|title)$/.test(elm.nodeName.toLowerCase()) ) {                
+                            
+                            html += "<" + elm.nodeName.toLowerCase();
+                        
+                            // add attributes
+                            if ( elm.hasAttributes() ) {
+                                attr = elm.attributes;
+                                alen = attr.length;
+                                for ( a = 0; a < alen; a+=1 ) {
+                                    html += " " + attr[ a ].name + '="' + attr[ a ].value + '"';
+                                }
+                            }
+                        
+                           
+                            html += '>';
+                           
+                            parseDOM( elm );
+                            
+                            
+                            html += "</" + elm.nodeName.toLowerCase() + ">";
+                        }
+                    }
+                    
+                }
+                
+            }
+           
+            parseDOM( body );
+            img.src = [
+            "data:image/svg+xml,",
+            "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='" + width + "' height='" + height + "'>",
+            "<foreignObject width='" + width + "' height='" + height + "'>",
+            "<html xmlns='http://www.w3.org/1999/xhtml' style='margin:0;'>",
+            html,
+            "</html>",
+            "</foreignObject>",
+            "</svg>"
+            ].join("");
+            
+            console.log(img.src);
+            img.onerror = function(e) {
+                console.log(e);
+            };
+           
+            img.onload = function() {
+                console.log("loaded");
+            };
+            
+            document.body.appendChild(img);
+        })( document.documentElement, 1280, 1024 );
+        
+    }
+    return;
+    */
+    
     images = images || {};
     
     // Test whether we can use ranges to measure bounding boxes
@@ -1031,61 +1208,7 @@ _html2canvas.Parse = function ( images, options ) {
     
 
     
-    function getBackgroundPosition(el, bounds, image){
-        // TODO add support for multi image backgrounds
-    
-        var bgposition = (function( bgp ){   
-            
-            if (bgp !== undefined) {
-                return (bgp.split(",")[0] || "0 0").split(" ");
-            } else {
-                // Older IE uses -x and -y 
-                return [ getCSS(el, "backgroundPositionX"), getCSS(el, "backgroundPositionY") ];
-            }
-            
-            
-        })( getCSS(el, "backgroundPosition") ),
-        topPos,
-        left,
-        percentage,
-        val;
-    
-        if (bgposition.length === 1){
-            val = bgposition;
-            
-            bgposition = [];
-        
-            bgposition[0] = val;
-            bgposition[1] = val;
-        }  
-
-    
-
-        if (bgposition[0].toString().indexOf("%") !== -1){    
-            percentage = (parseFloat(bgposition[0])/100);        
-            left =  ((bounds.width * percentage)-(image.width*percentage));
-      
-        }else{
-            left = parseInt(bgposition[0],10);
-        }
-
-        if (bgposition[1].toString().indexOf("%") !== -1){  
-
-            percentage = (parseFloat(bgposition[1])/100);     
-            topPos =  ((bounds.height * percentage)-(image.height*percentage));
-        }else{      
-            topPos = parseInt(bgposition[1],10);      
-        }
-
-    
-
-           
-        return {
-            top: topPos,
-            left: left
-        };
-         
-    }
+   
     
     function renderImage (ctx, image, sx, sy, sw, sh, dx, dy, dw, dh) {
         ctx.drawImage(
@@ -1207,7 +1330,7 @@ _html2canvas.Parse = function ( images, options ) {
             image = loadImage( background_image );
 					
 
-            bgp = getBackgroundPosition(el, bounds, image);
+            bgp = _html2canvas.Util.BackgroundPosition(el, bounds, image);
             
 
             if ( image ){
@@ -1582,7 +1705,7 @@ _html2canvas.Parse = function ( images, options ) {
     }
     
     
-    stack.backgroundColor = getCSS( body, "backgroundColor" );
+    stack.backgroundColor = getCSS( document.documentElement, "backgroundColor" );
     
     return stack;
 
@@ -1604,7 +1727,7 @@ function h2czContext(zindex) {
 */
 
 _html2canvas.Preload = function( options ) {
-    
+
     var images = {
         numLoaded: 0,   // also failed are counted here
         numFailed: 0,
@@ -1628,30 +1751,30 @@ _html2canvas.Preload = function( options ) {
     link.href = window.location.href;
     pageOrigin  = link.protocol + link.host;
 
-    
- 
-    
-   
-    
+
+
+
+
+
     function isSameOrigin(url){
-        link.href = url;  
+        link.href = url;
         link.href = link.href; // YES, BELIEVE IT OR NOT, that is required for IE9 - http://jsfiddle.net/niklasvh/2e48b/
-        var origin = link.protocol + link.host;              
+        var origin = link.protocol + link.host;
         return (origin === pageOrigin);
     }
-    
+
     function start(){
         h2clog("html2canvas: start: images: " + images.numLoaded + " / " + images.numTotal + " (failed: " + images.numFailed + ")");
         if (!images.firstRun && images.numLoaded >= images.numTotal){
-            
+            h2clog("Finished loading images: # " + images.numTotal + " (failed: " + images.numFailed + ")");
+
             if (typeof options.complete === "function"){
                 options.complete(images);
             }
 
-            h2clog("Finished loading images: # " + images.numTotal + " (failed: " + images.numFailed + ")");
         }
     }
-    
+
     // TODO modify proxy to serve images with CORS enabled, where available
     function proxyGetImage(url, img, imageObj){
         var callback_name,
@@ -1663,7 +1786,7 @@ _html2canvas.Preload = function( options ) {
 
         callback_name = 'html2canvas_' + (count++);
         imageObj.callbackname = callback_name;
-        
+
         if (scriptUrl.indexOf("?") > -1) {
             scriptUrl += "&";
         } else {
@@ -1677,10 +1800,10 @@ _html2canvas.Preload = function( options ) {
                 imageObj.succeeded = false;
                 images.numLoaded++;
                 images.numFailed++;
-                start();  
+                start();
             } else {
                 setImageLoadHandlers(img, imageObj);
-                img.src = a; 
+                img.src = a;
             }
             window[callback_name] = undefined; // to work with IE<9  // NOTE: that the undefined callback property-name still exists on the window object (for IE<9)
             try {
@@ -1698,13 +1821,13 @@ _html2canvas.Preload = function( options ) {
         window.document.body.appendChild(script);
 
     }
-    
+
     function getImages (el) {
-        
-     
-    
+
+
+
         // if (!this.ignoreRe.test(el.nodeName)){
-        // 
+        //
 
         var contents = _html2canvas.Util.Children(el),
         i,
@@ -1713,14 +1836,14 @@ _html2canvas.Preload = function( options ) {
         src,
         img,
         elNodeType = false;
-        
+
         for (i = 0;  i < contentsLen; i+=1 ){
             // var ignRe = new RegExp("("+this.ignoreElements+")");
             // if (!ignRe.test(element.nodeName)){
             getImages(contents[i]);
         // }
         }
-            
+
         // }
         try {
             elNodeType = el.nodeType;
@@ -1730,58 +1853,60 @@ _html2canvas.Preload = function( options ) {
         }
 
         if (elNodeType === 1 || elNodeType === undefined){
-            
+
             // opera throws exception on external-content.html
             try {
                 background_image = _html2canvas.Util.getCSS(el, 'backgroundImage');
             }catch(e) {
                 h2clog("html2canvas: failed to get background-image - Exception: " + e.message);
             }
-            if ( background_image && background_image !== "1" && background_image !== "none" ) {	
-                
+            if ( background_image && background_image !== "1" && background_image !== "none" ) {
+
                 // TODO add multi image background support
-                
-                if (background_image.substring(0,7) === "-webkit" || background_image.substring(0,3) === "-o-" || background_image.substring(0,4) === "-moz") {
-                  
+
+                if (/^(-webkit|-o|-moz|-ms|linear)-/.test( background_image )) {
+                    //       if (background_image.substring(0,7) === "-webkit" || background_image.substring(0,3) === "-o-" || background_image.substring(0,4) === "-moz") {
+
                     img = _html2canvas.Generate.Gradient( background_image, _html2canvas.Util.Bounds( el ) );
 
                     if ( img !== undefined ){
                         images[background_image] = {
-                            img: img, 
+                            img: img,
                             succeeded: true
                         };
                         images.numTotal++;
                         images.numLoaded++;
                         start();
-                        
+
                     }
-                    
-                } else {	
-                    src = _html2canvas.Util.backgroundImage(background_image.match(/data:image\/.*;base64,/i) ? background_image : background_image.split(",")[0]);		
+
+                } else {
+                    src = _html2canvas.Util.backgroundImage(background_image.match(/data:image\/.*;base64,/i) ? background_image : background_image.split(",")[0]);
                     methods.loadImage(src);
                 }
-           
+
             /*
             if (background_image && background_image !== "1" && background_image !== "none" && background_image.substring(0,7) !== "-webkit" && background_image.substring(0,3)!== "-o-" && background_image.substring(0,4) !== "-moz"){
                 // TODO add multi image background support
-                src = html2canvas.Util.backgroundImage(background_image.split(",")[0]);                    
-                methods.loadImage(src);            */        
+                src = html2canvas.Util.backgroundImage(background_image.split(",")[0]);
+                methods.loadImage(src);            */
             }
         }
-    }  
-    
+    }
+
     function setImageLoadHandlers(img, imageObj) {
         img.onload = function() {
             if ( imageObj.timer !== undefined ) {
                 // CORS succeeded
                 window.clearTimeout( imageObj.timer );
             }
+
             images.numLoaded++;
             imageObj.succeeded = true;
             start();
         };
         img.onerror = function() {
-            
+
             if (img.crossOrigin === "anonymous") {
                 // CORS failed
                 window.clearTimeout( imageObj.timer );
@@ -1797,22 +1922,33 @@ _html2canvas.Preload = function( options ) {
                     return;
                 }
             }
-            
-            
+
+
             images.numLoaded++;
             images.numFailed++;
             imageObj.succeeded = false;
             start();
-            
+
         };
+
+    // TODO Opera has no load/error event for SVG images
+
+    // Opera ninja onload's cached images
+    /*
+        window.setTimeout(function(){
+            if ( img.width !== 0 && imageObj.succeeded === undefined ) {
+                img.onload();
+            }
+        }, 100); // needs a reflow for base64 encoded images? interestingly timeout of 0 doesn't work but 1 does.
+        */
     }
-    
+
 
     methods = {
         loadImage: function( src ) {
-            var img, imageObj;      
+            var img, imageObj;
             if ( src && images[src] === undefined ) {
-                img = new Image();                
+                img = new Image();
                 if ( src.match(/data:image\/.*;base64,/i) ) {
                     img.src = src.replace(/url\(['"]{0,}|['"]{0,}\)$/ig, '');
                     imageObj = images[src] = {
@@ -1820,7 +1956,7 @@ _html2canvas.Preload = function( options ) {
                     };
                     images.numTotal++;
                     setImageLoadHandlers(img, imageObj);
-                } else if ( isSameOrigin( src ) || options.allowTaint ===  true ) {                    
+                } else if ( isSameOrigin( src ) || options.allowTaint ===  true ) {
                     imageObj = images[src] = {
                         img: img
                     };
@@ -1829,25 +1965,25 @@ _html2canvas.Preload = function( options ) {
                     img.src = src;
                 } else if ( supportCORS && !options.allowTaint && options.useCORS ) {
                     // attempt to load with CORS
-                    
-                    img.crossOrigin = "anonymous";    
+
+                    img.crossOrigin = "anonymous";
                     imageObj = images[src] = {
                         img: img
                     };
                     images.numTotal++;
                     setImageLoadHandlers(img, imageObj);
-                    img.src = src;           
-                    
+                    img.src = src;
+
                     // work around for https://bugs.webkit.org/show_bug.cgi?id=80028
                     img.customComplete = function () {
-                        if (!this.img.complete) { 
+                        if (!this.img.complete) {
                             this.timer = window.setTimeout(this.img.customComplete, 100);
-                        } else { 
-                            this.img.onerror();         
+                        } else {
+                            this.img.onerror();
                         }
-                    }.bind(imageObj);  
+                    }.bind(imageObj);
                     img.customComplete();
-                    
+
                 } else if ( options.proxy ) {
                     imageObj = images[src] = {
                         img: img
@@ -1855,8 +1991,8 @@ _html2canvas.Preload = function( options ) {
                     images.numTotal++;
                     proxyGetImage( src, img, imageObj );
                 }
-            }     
-          
+            }
+
         },
         cleanupDOM: function(cause) {
             var img, src;
@@ -1907,7 +2043,7 @@ _html2canvas.Preload = function( options ) {
                 window.clearTimeout(timeoutTimer);
             }
         }
-        
+
     };
 
     if (options.timeout > 0) {
@@ -1917,21 +2053,21 @@ _html2canvas.Preload = function( options ) {
     images.firstRun = true;
 
     getImages( element );
-    
+
     h2clog('html2canvas: Preload: Finding images');
     // load <img> images
     for (i = 0; i < imgLen; i+=1){
         methods.loadImage( domImages[i].getAttribute( "src" ) );
     }
-    
+
     images.firstRun = false;
     h2clog('html2canvas: Preload: Done.');
     if ( images.numTotal === images.numLoaded ) {
         start();
-    }  
-    
+    }
+
     return methods;
-    
+
 };
 
 
@@ -2042,7 +2178,7 @@ _html2canvas.Renderer = function(parseQueue, options){
 
     sortZ(parseQueue.zIndex);
     if ( typeof options.renderer._create !== "function" ) {
-        throw Error("Invalid renderer defined");
+        throw new Error("Invalid renderer defined");
     }
     return options.renderer._create( parseQueue, options, document, queue, _html2canvas );
 
@@ -2360,7 +2496,7 @@ html2canvas.Renderer.Canvas = function( options ) {
         
             return canvas;
         }
-    }
+    };
     
     return methods;
 
