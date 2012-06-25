@@ -5,6 +5,7 @@
 
   Released under MIT License
 */
+var h2cSelector, h2cOptions;
 (function(document, window) {
     var scrStart = '<script type="text/javascript" src="', scrEnd = '"></script>';
     document.write(scrStart + '../js/jquery-1.7.1.js' + scrEnd);
@@ -13,11 +14,14 @@
         document.write(scrStart + '../js/' + html2canvas[i] + '.js' + scrEnd);
     }
     window.onload = function() {
+        
+        h2cSelector = [document.body];
+        
         if (window.setUp) {
             window.setUp();
         }
         setTimeout(function() {
-            $(document.body).html2canvas({
+            $(h2cSelector).html2canvas({
                 flashcanvas: "../external/flashcanvas.min.js",
                 logging: true,
                 profile: true,
