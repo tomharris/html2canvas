@@ -440,9 +440,9 @@ _html2canvas.Parse = function ( images, options ) {
         return bounds;
 
     }
-    
 
-    
+
+
     function elementIndex( el ) {
         var i = -1,
         count = 1,
@@ -458,7 +458,7 @@ _html2canvas.Parse = function ( images, options ) {
         } else {
             return -1;
         }
-       
+
     }
 
     function renderListItem(element, stack, elBounds) {
@@ -642,7 +642,7 @@ _html2canvas.Parse = function ( images, options ) {
             var borders = [],
             sides = ["TopLeft","TopRight","BottomRight","BottomLeft"],
             s;
-            
+
             for (s = 0; s < 4; s+=1){
                 borders.push( getCSS(el, 'border' + sides[s] + 'Radius') );
             }
@@ -665,49 +665,49 @@ _html2canvas.Parse = function ( images, options ) {
                     case 0:
                         // top border
                         bh = borders[0].width;
-                        
+
                         i = 0;
                         borderArgs[ i++ ] = [ "line", bx, by ];  // top left
                         borderArgs[ i++ ] = [ "line", bx + bw, by ]; // top right
                         borderArgs[ i++ ] = [ "line", bx + bw - borders[ 1 ].width, by + bh  ]; // bottom right
                         borderArgs[ i++ ] = [ "line", bx + borders[ 3 ].width, by + bh ]; // bottom left
-                        
+
                         break;
                     case 1:
                         // right border
                         bx = x + w - (borders[1].width);
                         bw = borders[1].width;
-                        
+
                         i = 0;
                         borderArgs[ i++ ] = [ "line", bx, by + borders[ 0 ].width];  // top left
                         borderArgs[ i++ ] = [ "line", bx + bw, by ]; // top right
                         borderArgs[ i++ ] = [ "line", bx + bw, by + bh + borders[ 2 ].width ]; // bottom right
                         borderArgs[ i++ ] = [ "line", bx, by + bh ]; // bottom left
-                        
+
                         break;
                     case 2:
                         // bottom border
                         by = (by + h) - (borders[2].width);
                         bh = borders[2].width;
-                                             
-                                    
+
+
                         i = 0;
                         borderArgs[ i++ ] = [ "line", bx + borders[ 3 ].width, by ];  // top left
                         borderArgs[ i++ ] = [ "line", bx + bw - borders[ 2 ].width, by ]; // top right
                         borderArgs[ i++ ] = [ "line", bx + bw, by + bh ]; // bottom right
                         borderArgs[ i++ ] = [ "line", bx, by + bh ]; // bottom left
-                        
+
                         break;
                     case 3:
                         // left border
                         bw = borders[3].width;
-                        
+
                         i = 0;
                         borderArgs[ i++ ] = [ "line", bx, by ];  // top left
                         borderArgs[ i++ ] = [ "line", bx + bw, by + borders[ 0 ].width ]; // top right
                         borderArgs[ i++ ] = [ "line", bx + bw, by + bh ]; // bottom right
                         borderArgs[ i++ ] = [ "line", bx, by + bh + borders[ 2 ].width ]; // bottom left
-                        
+
                         break;
                 }
 
@@ -724,23 +724,23 @@ _html2canvas.Parse = function ( images, options ) {
 
 
                 if ( borderBounds.width > 0 && borderBounds.height > 0 ) {
-                    
+
                     if ( borderData.color !== "transparent" ){
                         ctx.setVariable( "fillStyle", borderData.color );
-                        
+
                         var shape = ctx.drawShape(),
                         numBorderArgs = borderArgs.length;
-                        
+
                         for ( i = 0; i < numBorderArgs; i++ ) {
                             shape[( i === 0) ? "moveTo" : borderArgs[ i ][ 0 ] + "To" ].apply( null, borderArgs[ i ].slice(1) );
                         }
 
                         numDraws+=1;
                     }
-                    
-                    
-            
-                    
+
+
+
+
                 //  renderRect(ctx, bx, by, borderBounds.width, borderBounds.height, borderData.color);
                 }
 
@@ -906,6 +906,7 @@ _html2canvas.Parse = function ( images, options ) {
         // TODO add support for multi background-images
         var background_image = getCSS(el, "backgroundImage"),
         background_repeat = getCSS(el, "backgroundRepeat").split(",")[0],
+        background_size = getCSS(el, "backgroundSize"),
         image,
         bgp,
         bgy,
@@ -917,7 +918,9 @@ _html2canvas.Parse = function ( images, options ) {
         bgh,
         h,
         height,
-        add;
+        add,
+        sbh,
+        sbw;
 
         //   if (typeof background_image !== "undefined" && /^(1|none)$/.test(background_image) === false && /^(-webkit|-moz|linear-gradient|-o-)/.test(background_image)===false){
 
@@ -957,8 +960,6 @@ _html2canvas.Parse = function ( images, options ) {
                         bounds.top
                         );*/
 
-
-                       
                         bgw = bounds.width - bgp.left;
                         bgh = bounds.height - bgp.top;
                         bgsx = bgp.left;
@@ -989,6 +990,17 @@ _html2canvas.Parse = function ( images, options ) {
                             bgsy = 0;
                         }
 
+                        switch ( background_size ) {
+                          case '100%':
+                            sbw = bounds.width;
+                            sbh = bounds.height;
+
+                            break;
+                          default:
+                            sbw = bgw;
+                            sbh = bgh;
+                          }
+
 
                         if (bgh>0 && bgw > 0){
                             renderImage(
@@ -1000,8 +1012,8 @@ _html2canvas.Parse = function ( images, options ) {
                                 bgh, // source Height : 1677
                                 bgdx, // destination X :906
                                 bgdy, // destination Y : 1020
-                                bgw, // destination width : 18
-                                bgh // destination height : 1677
+                                sbw, // destination width : 18
+                                sbh // destination height : 1677
                                 );
 
                         }
@@ -1294,7 +1306,7 @@ _html2canvas.Parse = function ( images, options ) {
                 }
 
             }
-        } 
+        }
     }
 
     stack = renderElement(element, null);
