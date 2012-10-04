@@ -473,83 +473,85 @@ _html2canvas.Parse = function ( images, options ) {
         listBounds,
         bold = getCSS(element, "fontWeight");
 
-        if (/^(decimal|decimal-leading-zero|upper-alpha|upper-latin|upper-roman|lower-alpha|lower-greek|lower-latin|lower-roman)$/i.test(type)) {
-
             currentIndex = elementIndex( element );
 
-            switch(type){
-                case "decimal":
-                    text = currentIndex;
-                    break;
-                case "decimal-leading-zero":
-                    if (currentIndex.toString().length === 1){
-                        text = currentIndex = "0" + currentIndex.toString();
-                    }else{
-                        text = currentIndex.toString();
-                    }
-                    break;
-                case "upper-roman":
-                    text = _html2canvas.Generate.ListRoman( currentIndex );
-                    break;
-                case "lower-roman":
-                    text = _html2canvas.Generate.ListRoman( currentIndex ).toLowerCase();
-                    break;
-                case "lower-alpha":
-                    text = _html2canvas.Generate.ListAlpha( currentIndex ).toLowerCase();
-                    break;
-                case "upper-alpha":
-                    text = _html2canvas.Generate.ListAlpha( currentIndex );
-                    break;
-            }
-
-
-            text += ". ";
-            listBounds = listPosition(element, text);
-
-
-
-            switch(bold){
-                case 401:
-                    bold = "bold";
-                    break;
-                case 400:
-                    bold = "normal";
-                    break;
-            }
-
-
-
-
-            ctx.setVariable( "fillStyle", getCSS(element, "color") );
-            ctx.setVariable( "font", getCSS(element, "fontVariant") + " " + bold + " " + getCSS(element, "fontStyle") + " " + getCSS(element, "fontSize") + " " + getCSS(element, "fontFamily") );
-
-
-            if ( position === "inside" ) {
-                ctx.setVariable("textAlign", "left");
-                //   this.setFont(stack.ctx, element, false);
-                x = elBounds.left;
-
-            }else{
-                return;
-            /*
-                 TODO really need to figure out some more accurate way to try and find the position.
-                 as defined in http://www.w3.org/TR/CSS21/generate.html#propdef-list-style-position, it does not even have a specified "correct" position, so each browser
-                 may display it whatever way it feels like.
-                 "The position of the list-item marker adjacent to floats is undefined in CSS 2.1. CSS 2.1 does not specify the precise location of the marker box or its position in the painting order"
-
-                ctx.setVariable("textAlign", "right");
-                //  this.setFont(stack.ctx, element, true);
-                x = elBounds.left - 10;
-                 */
-            }
-
-            y = listBounds.bottom;
-
-            drawText(text, x, y, ctx);
-
-
+        switch(type){
+            case "decimal":
+                text = currentIndex;
+                text += ". ";
+                break;
+            case "decimal-leading-zero":
+                if (currentIndex.toString().length === 1){
+                    text = currentIndex = "0" + currentIndex.toString();
+                }else{
+                    text = currentIndex.toString();
+                }
+                text += ". ";
+                break;
+            case "upper-roman":
+                text = _html2canvas.Generate.ListRoman( currentIndex );
+                text += ". ";
+                break;
+            case "lower-roman":
+                text = _html2canvas.Generate.ListRoman( currentIndex ).toLowerCase();
+                text += ". ";
+                break;
+            case "lower-alpha":
+                text = _html2canvas.Generate.ListAlpha( currentIndex ).toLowerCase();
+                text += ". ";
+                break;
+            case "upper-alpha":
+                text = _html2canvas.Generate.ListAlpha( currentIndex );
+                text += ". ";
+                break;
+            default: /* disc */
+                text = '• ';
+                break;
         }
 
+
+        listBounds = listPosition(element, text);
+
+
+
+        switch(bold){
+            case 401:
+                bold = "bold";
+                break;
+            case 400:
+                bold = "normal";
+                break;
+        }
+
+
+
+
+        ctx.setVariable( "fillStyle", getCSS(element, "color") );
+        ctx.setVariable( "font", getCSS(element, "fontVariant") + " " + bold + " " + getCSS(element, "fontStyle") + " " + getCSS(element, "fontSize") + " " + getCSS(element, "fontFamily") );
+
+
+        if ( position === "inside" ) {
+            ctx.setVariable("textAlign", "left");
+            //   this.setFont(stack.ctx, element, false);
+            x = elBounds.left;
+
+        }else{
+            return;
+        /*
+             TODO really need to figure out some more accurate way to try and find the position.
+             as defined in http://www.w3.org/TR/CSS21/generate.html#propdef-list-style-position, it does not even have a specified "correct" position, so each browser
+             may display it whatever way it feels like.
+             "The position of the list-item marker adjacent to floats is undefined in CSS 2.1. CSS 2.1 does not specify the precise location of the marker box or its position in the painting order"
+
+            ctx.setVariable("textAlign", "right");
+            //  this.setFont(stack.ctx, element, true);
+            x = elBounds.left - 10;
+             */
+        }
+
+        y = listBounds.bottom;
+
+        drawText(text, x, y, ctx);
 
     }
 
